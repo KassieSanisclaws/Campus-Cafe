@@ -34,9 +34,7 @@ import androidx.compose.runtime.setValue
             Text( text = "Campus Cafe" )
             Text( text = "Welcome, Students" )
             Text( text = "Points: $points" )
-            Button(
-                onClick = onMenuClick
-            ) {
+            Button(onClick = onMenuClick ) {
                 Text( text = "View Menu" )
             }
         }
