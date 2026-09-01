@@ -1,19 +1,19 @@
 package com.raywenderlich.campuscafe.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.navArgument
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.composable
-import com.raywenderlich.campuscafe.ui.dataclasses.MenuItem
 import com.raywenderlich.campuscafe.ui.main.HomeScreen
 import com.raywenderlich.campuscafe.ui.menu.MenuDetailsScreen
 import com.raywenderlich.campuscafe.ui.menu.MenuScreen
-import com.raywenderlich.campuscafe.ui.model.Category
-import com.raywenderlich.campuscafe.ui.order.OrderManager
 import com.raywenderlich.campuscafe.ui.order.OrderScreen
-import androidx.compose.runtime.remember
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.raywenderlich.campuscafe.ui.viewModel.CampusCafeViewModel
 
 object Routes {
     const val HOME = "home"
@@ -27,42 +27,25 @@ fun AppNavigation() {
 
     // Navigation controller manages movement between screens.
     val navController = rememberNavController()
-    // OrderManager stores and manages the current order.
-    val orderManager = remember {
-        OrderManager()
-    }
-
-
-    val menuItems = listOf(
-
-        MenuItem(
-            id = 1,
-            name = "Coffee",
-            price = 2.50,
-            category = Category.DRINK
-        ),
-
-        MenuItem(
-            id = 2,
-            name = "Tea",
-            price = 2.00,
-            category = Category.DRINK
-        ),
-
-        MenuItem(
-            id = 3,
-            name = "Donut",
-            price = 1.75,
-            category = Category.DESSERT
-        ),
-
-        MenuItem(
-            id = 4,
-            name = "Sandwich",
-            price = 6.50,
-            category = Category.FOOD
-        )
-    )
+    // ---------------------------------------------------------
+    // VIEWMODEL
+    // ---------------------------------------------------------
+    // The ViewModel owns our application state.
+    //
+    // We do NOT create an OrderManager anymore.
+    val viewModel: CampusCafeViewModel = viewModel()
+    // ---------------------------------------------------------
+    // OBSERVE ORDER ITEMS
+    // ---------------------------------------------------------
+    // Convert StateFlow into Compose state.
+    //
+    // When orderItems changes, Compose automatically
+    // recomposes the screens using this value.
+    val orderItems by viewModel.orderItems .collectAsStateWithLifecycle()
+    // ---------------------------------------------------------
+    // OBSERVE TOTAL
+    // ---------------------------------------------------------
+    val total by viewModel.total .collectAsStateWithLifecycle()
 
     // NavHost contains all of the screens in our application.
     NavHost(
@@ -93,7 +76,7 @@ fun AppNavigation() {
 
             MenuScreen(
                 // Give MenuScreen the menu data.
-                menuItems = menuItems,
+                menuItems = viewModel.menuItems,
                 // When the user selects an item,
                 // navigate to the details screen.
                 onItemClick = { item ->
@@ -124,7 +107,7 @@ fun AppNavigation() {
                 .arguments
                 ?.getInt("itemId")
 
-            val selectedItem = menuItems.find {
+            val selectedItem = viewModel.menuItems.find {
                 it.id == itemId
             }
 
@@ -142,7 +125,7 @@ fun AppNavigation() {
 
                     onAddToOrder = {
                         // Add the selected item to the order.
-                        orderManager.addItem(
+                        viewModel.addItem(
                             selectedItem
                         )
 
@@ -163,26 +146,29 @@ fun AppNavigation() {
         composable(Routes.ORDER) {
 
             OrderScreen(
-                // Give OrderScreen the current order items.
-                orderItems = orderManager.items,
-                // Give OrderScreen the current total.
-                total = orderManager.getTotal(),
+                // Current order from the ViewModel.
+                orderItems = orderItems,
+                // Current total from the ViewModel.
+                total = total,
 
+                // ---------------------------------------------
+                // REMOVE ONE
+                // ---------------------------------------------
                 onRemoveItem = { orderItem ->
 
-                    orderManager.removeItem(
+                    viewModel.removeItem(
                         orderItem.menuItem
                     )
                 },
 
                 onClearOrder = {
 
-                    orderManager.clearOrder()
+                    viewModel.clearOrder()
                 },
 
                 onCheckout = {
                     // Clear the current order.
-                    orderManager.clearOrder()
+                    viewModel.clearOrder()
                     // Return to the home screen.
                     navController.navigate(
                         Routes.HOME
