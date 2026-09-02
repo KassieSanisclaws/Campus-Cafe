@@ -12,11 +12,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.raywenderlich.campuscafe.ui.dataclasses.MenuItem
-import com.raywenderlich.campuscafe.ui.model.Category
 
 @Composable
 fun MenuScreen(
@@ -30,11 +30,23 @@ fun MenuScreen(
     ) {
 
         Text(
-            text = "☕ Campus Café Menu"
+            text = "☕ Campus Café Menu",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Text(
+            text = "Choose something delicious!",
+            modifier = Modifier.padding(top = 4.dp),
+            fontSize = 16.sp
         )
 
         LazyColumn(
-            modifier = Modifier.padding(top = 16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .padding(top = 16.dp
+                ),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
 
@@ -64,21 +76,27 @@ fun MenuItemCard(
         ) {
 
             Text(
-                text = item.name
+                text = item.name,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
             )
 
             Text(
-                text = "Category: ${item.category}"
+                text = "Category: ${item.category}",
+                modifier = Modifier.padding(top = 4.dp)
             )
 
             Text(
-                text = "$${item.price}"
+                text = "$${"%.2f".format(item.price)}",
+                modifier = Modifier.padding(top = 8.dp),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
             )
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp),
+                    .padding(top = 12.dp),
                 horizontalArrangement = Arrangement.End
             ) {
 
