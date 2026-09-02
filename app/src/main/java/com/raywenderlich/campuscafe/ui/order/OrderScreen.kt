@@ -20,6 +20,8 @@ import com.raywenderlich.campuscafe.ui.dataclasses.OrderItem
 fun OrderScreen(
     orderItems: List<OrderItem>,
     total: Double,
+    onIncreaseQuantity: (OrderItem) -> Unit,
+    onDecreaseQuantity: (OrderItem) -> Unit,
     onRemoveItem: (OrderItem) -> Unit,
     onClearOrder: () -> Unit,
     onCheckout: () -> Unit
@@ -43,6 +45,8 @@ fun OrderScreen(
                 items(orderItems) { orderItem ->
                      OrderItemCard(
                          orderItem = orderItem,
+                         onIncreaseQuantity = onIncreaseQuantity,
+                         onDecreaseQuantity = onDecreaseQuantity,
                          onRemoveItem = onRemoveItem
                      )
                 }
@@ -73,6 +77,8 @@ fun OrderScreen(
 @Composable
 fun OrderItemCard(
     orderItem: OrderItem,
+    onIncreaseQuantity: (OrderItem) -> Unit,
+    onDecreaseQuantity: (OrderItem) -> Unit,
     onRemoveItem: (OrderItem) -> Unit
 ) {
     Card(
@@ -84,7 +90,50 @@ fun OrderItemCard(
             // Menu item name
             Text( text = orderItem.menuItem.name )
             // Quantity:
-            Text( text = "Quantity: ${ orderItem.quantity }")
+            Text(
+                text = "Quantity",
+                modifier = Modifier.padding(top = 8.dp)
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+
+                // DECREASE BUTTON
+
+                Button(
+                    onClick = {
+                        onDecreaseQuantity(orderItem)
+                    }
+                ) {
+                    Text(text = "−")
+                }
+
+
+                // CURRENT QUANTITY
+
+                Text(
+                    text = "${orderItem.quantity}",
+                    modifier = Modifier.padding(
+                        horizontal = 24.dp,
+                        vertical = 12.dp
+                    )
+                )
+
+
+                // INCREASE BUTTON
+
+                Button(
+                    onClick = {
+                        onIncreaseQuantity(orderItem)
+                    }
+                ) {
+                    Text(text = "+")
+                }
+            }
             // Price for one item
             Text(text = "Price: $${"%.2f".format(orderItem.menuItem.price)}")
             // Price for all items

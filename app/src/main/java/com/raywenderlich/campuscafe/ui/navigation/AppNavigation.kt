@@ -13,6 +13,8 @@ import com.raywenderlich.campuscafe.ui.menu.MenuScreen
 import com.raywenderlich.campuscafe.ui.order.OrderScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.raywenderlich.campuscafe.ui.checkout.CheckOutScreen
+import com.raywenderlich.campuscafe.ui.profile.ProfileScreen
 import com.raywenderlich.campuscafe.ui.viewModel.CampusCafeViewModel
 
 object Routes {
@@ -20,6 +22,8 @@ object Routes {
     const val MENU = "menu"
     const val MENU_DETAILS = "menu/{itemId}"
     const val ORDER = "order"
+    const val PROFILE = "profile"
+    const val CHECKOUT = "checkout"
 }
 
 @Composable
@@ -47,6 +51,9 @@ fun AppNavigation() {
     // ---------------------------------------------------------
     val total by viewModel.total .collectAsStateWithLifecycle()
 
+    // POINTS-TRACKER:
+    val points by viewModel.points.collectAsStateWithLifecycle()
+
     // NavHost contains all of the screens in our application.
     NavHost(
         navController = navController,
@@ -60,10 +67,14 @@ fun AppNavigation() {
         composable(Routes.HOME) {
 
             HomeScreen(
+                points = points,
                 // HomeScreen tells AppNavigation that
                 // the user wants to see the menu.
                 onMenuClick = {
                     navController.navigate(Routes.MENU)
+                },
+                onProfileClick = {
+                    navController.navigate(Routes.PROFILE)
                 }
             )
         }
@@ -151,6 +162,22 @@ fun AppNavigation() {
                 // Current total from the ViewModel.
                 total = total,
 
+                // Increase quantity.
+                onIncreaseQuantity = { orderItem ->
+
+                    viewModel.increaseQuantity(
+                        orderItem.menuItem
+                    )
+                },
+
+                // Decrease quantity.
+                onDecreaseQuantity = { orderItem ->
+
+                    viewModel.decreaseQuantity(
+                        orderItem.menuItem
+                    )
+                },
+
                 // ---------------------------------------------
                 // REMOVE ONE
                 // ---------------------------------------------
@@ -167,14 +194,35 @@ fun AppNavigation() {
                 },
 
                 onCheckout = {
-                    // Clear the current order.
-                    viewModel.clearOrder()
-                    // Return to the home screen.
+                    // Navigate to the Checkout screen.
+                    //
+                    // We do NOT clear the order yet because
+                    // Checkout still needs the current total.
+
                     navController.navigate(
-                        Routes.HOME
-                    ) {
-                        // Remove previous navigation
-                        // destinations from the back stack.
+                        Routes.CHECKOUT
+                    )
+                }
+            )
+        }
+
+        // CHECKOUT
+        composable(Routes.CHECKOUT) {
+
+            CheckOutScreen(
+                total = total,
+                pointsEarned = total.toInt(),
+
+                onDoneClick = {
+                    // Award the points.
+                    viewModel.addPoints(
+                        total.toInt()
+                    )
+
+                    // Clear the completed order.
+                    viewModel.clearOrder()
+
+                    navController.navigate(Routes.HOME) {
                         popUpTo(Routes.HOME) {
                             inclusive = false
                         }
@@ -182,5 +230,16 @@ fun AppNavigation() {
                 }
             )
         }
+
+        // PROFILE [Screen]
+        composable(Routes.PROFILE) {
+            ProfileScreen(
+                points = points,
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
     }
 }

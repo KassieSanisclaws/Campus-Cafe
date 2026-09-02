@@ -17,13 +17,10 @@ import androidx.compose.runtime.setValue
 
 @Composable
     fun HomeScreen(
-    onMenuClick: () -> Unit
+    points: Int,
+    onMenuClick: () -> Unit,
+    onProfileClick: () -> Unit
     ) {
-
-        var points by remember {
-            mutableIntStateOf(0)
-        }
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -36,6 +33,12 @@ import androidx.compose.runtime.setValue
             Text( text = "Points: $points" )
             Button(onClick = onMenuClick ) {
                 Text( text = "View Menu" )
+            }
+            Button(
+                onClick = onProfileClick,
+                modifier = Modifier.padding(top = 8.dp)
+            ) {
+                Text(text = "Student Profile")
             }
         }
     }

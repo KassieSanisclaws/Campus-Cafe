@@ -61,6 +61,13 @@ val orderItems: StateFlow<List<OrderItem>> = _orderItems.asStateFlow()
     private val _total = MutableStateFlow(0.0)
     val total: StateFlow<Double> = _total.asStateFlow()
 
+    // STUDENT POINTS:
+    // Store The Current Points:
+    private val _points = MutableStateFlow(0)
+
+    // READ-Only - Version For UI:
+    val points: StateFlow<Int> = _points.asStateFlow()
+
 // =========================================================
 // ADD ITEM
 // =========================================================
@@ -88,6 +95,8 @@ fun addItem(
         )
         _orderItems.value = updatedOrder
     }
+    // Re-Calculate & Get Total:
+    getTotal()
 }
 // =========================================================
 // REMOVE ONE
@@ -115,20 +124,111 @@ fun removeItem(
             }
             _orderItems.value = updatedOrder
         }
+        // Re-Calculate & Get Total:
+        getTotal()
     }
 }
+    // =========================================================
+    // INCREASE QUANTITY
+    // =========================================================
+    fun increaseQuantity(
+        menuItem: MenuItem
+    ) {
+
+        val currentOrder = _orderItems.value
+
+        val updatedOrder = currentOrder.map { orderItem ->
+
+            if (orderItem.menuItem.id == menuItem.id) {
+
+                orderItem.copy(
+                    quantity = orderItem.quantity + 1
+                )
+
+            } else {
+                orderItem
+            }
+        }
+
+        _orderItems.value = updatedOrder
+
+        // Recalculate the total.
+
+        getTotal()
+    }
+
+    // =========================================================
+// DECREASE QUANTITY
+// =========================================================
+
+    fun decreaseQuantity(
+        menuItem: MenuItem
+    ) {
+
+        val currentOrder = _orderItems.value
+
+        val existingItem = currentOrder.find {
+            it.menuItem.id == menuItem.id
+        }
+
+        if (existingItem != null) {
+
+            if (existingItem.quantity > 1) {
+
+                // Reduce the quantity by one.
+
+                val updatedOrder = currentOrder.map { orderItem ->
+
+                    if (orderItem.menuItem.id == menuItem.id) {
+
+                        orderItem.copy(
+                            quantity = orderItem.quantity - 1
+                        )
+
+                    } else {
+                        orderItem
+                    }
+                }
+
+                _orderItems.value = updatedOrder
+
+            } else {
+
+                // If quantity is already one,
+                // remove the item from the order.
+
+                val updatedOrder = currentOrder.filter {
+                    it.menuItem.id != menuItem.id
+                }
+
+                _orderItems.value = updatedOrder
+            }
+
+            // Recalculate the total.
+
+            getTotal()
+        }
+    }
+
 // =========================================================
 // CLEAR ORDER
 // =========================================================
 fun clearOrder() {
     _orderItems.value = emptyList()
+
+    // RESET The Total:
+    _total.value = 0.0
 }
 // =========================================================
 // TOTAL
 // =========================================================
-fun getTotal(): Double {
-    return _orderItems.value.sumOf { orderItem ->
+private fun getTotal() {
+    _total.value = _orderItems.value.sumOf { orderItem ->
         orderItem.menuItem.price * orderItem.quantity
     }
-  }
+}
+    // AWARD-Points:
+    fun addPoints(amount: Int) {
+        _points.value += amount
+    }
 }
